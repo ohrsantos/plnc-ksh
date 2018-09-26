@@ -131,10 +131,16 @@ function drop_regs {
    fi
 }
 
+#function load_reg {
+ #  print -n ${1}
+ #  input="${input}${1}"
+ #  input_f=$input
+#}
+
 function load_reg {
-   print -n ${1}
    input="${input}${1}"
    input_f=$input
+   printf "\r%${COLUMNS}s" ${input}
 }
 
 

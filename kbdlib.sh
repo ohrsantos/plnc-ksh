@@ -4,10 +4,10 @@
 ################################################################################
 SCRIPT_NAME="Keyboard Lib"
 ################################################################################
-KBDLIB_VERSION=0.001
+KBDLIB_VERSION=0.002
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="17-01-2018"
-DATE_END="17-01-2018"
+DATE_END="03-04-2019"
 ################################################################################
 
 
@@ -103,29 +103,58 @@ NewGetKey () {
                         'B')    readchar=CURS_DOWN;;
                         'C')    readchar=CURS_RIGHT;;
                         'D')    readchar=CURS_LEFT;;
+                        'F')    readchar=END;;
+                        'H')    readchar=HOME;;
                         '1')    
                                 fourth=$(dd bs=1 count=1 2>/dev/null)
-                                fifith=$(dd bs=1 count=1 2>/dev/null)
                                 case "$fourth" in
-                                    '5')    readchar=FN_05;;
-                                    '7')    readchar=FN_06;;
-                                    '8')    readchar=FN_07;;
-                                    '9')    readchar=FN_08;;
+                                    '5')    readchar=FN_05
+                                            fifith=$(dd bs=1 count=1 2>/dev/null);;
+                                    '7')    readchar=FN_06
+                                            fifith=$(dd bs=1 count=1 2>/dev/null);;
+                                    '8')    readchar=FN_07
+                                            fifith=$(dd bs=1 count=1 2>/dev/null);;
+                                    '9')    readchar=FN_08
+                                            fifith=$(dd bs=1 count=1 2>/dev/null);;
                                      *)     readchar="$readchar$second$third$fourth";;
                                 esac;;
                         '2')    
                                 fourth=$(dd bs=1 count=1 2>/dev/null)
-                                fifith=$(dd bs=1 count=1 2>/dev/null)
                                 case "$fourth" in
-                                    '0')    readchar=FN_09;;
-                                    '1')    readchar=FN_10;;
-                                    '4')    readchar=FN_12;;
+                                    '0')    readchar=FN_09
+                                            fifith=$(dd bs=1 count=1 2>/dev/null);;
+                                    '1')    readchar=FN_10
+                                            fifith=$(dd bs=1 count=1 2>/dev/null);;
+                                    '4')    readchar=FN_12
+                                            fifith=$(dd bs=1 count=1 2>/dev/null);;
+                                    '~')    readchar=INS;;
+                                     *)     readchar="$readchar$second$third$fourth";;
+                                esac;;
+
+                        '3')    
+                                fourth=$(dd bs=1 count=1 2>/dev/null)
+                                case "$fourth" in
+                                    '~')    readchar=DEL;;
+                                     *)     readchar="$readchar$second$third$fourth";;
+                                esac;;
+
+                        '5')    
+                                fourth=$(dd bs=1 count=1 2>/dev/null)
+                                case "$fourth" in
+                                    '~')    readchar=PG_UP;;
+                                     *)     readchar="$readchar$second$third$fourth";;
+                                esac;;
+
+                        '6')    
+                                fourth=$(dd bs=1 count=1 2>/dev/null)
+                                case "$fourth" in
+                                    '~')    readchar=PG_DOWN;;
                                      *)     readchar="$readchar$second$third$fourth";;
                                 esac;;
 
                           *)    readchar="$readchar$second$third";;
                     esac;;
-                'O')  # O for function keys
+                'O')  # O for function keys 1 to 4
                     third=`dd bs=1 count=1 2>/dev/null`
                     case "$third" in
                         'P')    readchar=FN_01;;

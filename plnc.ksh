@@ -7,10 +7,10 @@
 ################################################################################
 SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.993a
+PLN_KSH_VERSION=0.994a
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
-DATE_END="14-09-2018"
+DATE_END="03-04-2019"
 ################################################################################
 
 #clear
@@ -377,15 +377,28 @@ done
 
 function dispatch_key {
     case "$Key" in
-           CTRL_B)      print -n "CTRL_B";;
-           CTRL_C)      printf "\nbye!\n"; exit 0;;
-           CTRL_P)      print_regs;;
-               CR)      enter;;
-            FN_01)       print_help;;
-            FN_02)       recall_reg $input;;
-            FN_05)       swap;;
-            FN_10)       triple_zeros;;
-              DEL)      clear;;
+           "CTRL_B")       print -n "CTRL_B";;
+           "CTRL_C")       printf "\nbye!\n"; exit 0;;
+           "CTRL_P")       print_regs;;
+               "CR")       enter;;
+            "FN_01")       print_help;;
+            "FN_02")       recall_reg $input;;
+            "FN_05")       swap;;
+            "FN_06")       echo F6;;
+            "FN_07")       echo F7;;
+            "FN_08")       echo F8;;
+            "FN_09")       echo F9;;
+            "FN_10")       triple_zeros;;
+            "FN_11")       echo F11;;
+            "FN_12")       echo F12;;
+            "CURS_RIGHT")  double_zeros;;
+            "CURS_DOWN")   drop_regs;;
+            "CURS_UP")     swap;;
+            "CURS_LEFT")   minus;;
+            "PG_UP")       sqrt;;
+            "PG_DOWN")     triple_zeros;;
+            "INS")         echo INS;;
+            "DEL")         clear;;
                 *)      case $Key in
                             '~') round;;
                             ',') double_zeros;;

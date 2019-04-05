@@ -7,10 +7,10 @@
 ################################################################################
 SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.994a
+PLN_KSH_VERSION=0.996a
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
-DATE_END="03-04-2019"
+DATE_END="05-04-2019"
 ################################################################################
 
 #clear
@@ -131,14 +131,11 @@ function drop_regs {
    fi
 }
 
-#function load_reg {
- #  print -n ${1}
- #  input="${input}${1}"
- #  input_f=$input
-#}
-
 function load_reg {
+    #echo 'load_reg()'
+    #echo $input
    input="${input}${1}"
+    #echo $input
    input_f=$input
    printf "\r%${COLUMNS}s" ${input}
 }
@@ -231,10 +228,17 @@ function swap {
 }
 
 function sqrt {
+    #echo 'sqrt()'
    if [[ -n $input ]]; then
-      regs[$reg_idx]=$((sqrt(input_f)))
+      input_f=$((sqrt(input_f)))
+      #echo $input_f
+      #echo "$input_f"
       input=""
-      ((reg_idx++))
+      load_reg "$input_f"
+      #regs[$reg_idx]=$((sqrt(input_f)))
+      #input=""
+      #((reg_idx++))
+      return
    else
       regs[reg_idx - 1]=$((sqrt(${regs[reg_idx - 1]})))
       regs[reg_idx]=""

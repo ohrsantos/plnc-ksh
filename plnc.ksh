@@ -392,9 +392,9 @@ function dispatch_key {
             "FN_11")       echo F11;;
             "FN_12")       echo F12;;
             "CURS_RIGHT")  double_zeros;;
-            "CURS_DOWN")   drop_regs;;
+            "CURS_DOWN")   minus;;
             "CURS_UP")     swap;;
-            "CURS_LEFT")   minus;;
+            "CURS_LEFT")   drop_regs;;
             "PG_UP")       sqrt;;
             "PG_DOWN")     triple_zeros;;
             "INS")         echo INS;;

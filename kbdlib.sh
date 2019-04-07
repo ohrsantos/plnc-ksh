@@ -4,10 +4,10 @@
 ################################################################################
 SCRIPT_NAME="Keyboard Lib"
 ################################################################################
-KBDLIB_VERSION=0.002
+KBDLIB_VERSION=0.003
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="17-01-2018"
-DATE_END="03-04-2019"
+DATE_END="07-04-2019"
 ################################################################################
 
 
@@ -104,7 +104,6 @@ NewGetKey () {
                         'C')    readchar=CURS_RIGHT;;
                         'D')    readchar=CURS_LEFT;;
                         'F')    readchar=END;;
-                        'H')    readchar=HOME;;
                         '1')    
                                 fourth=$(dd bs=1 count=1 2>/dev/null)
                                 case "$fourth" in
@@ -157,10 +156,12 @@ NewGetKey () {
                 'O')  # O for function keys 1 to 4
                     third=`dd bs=1 count=1 2>/dev/null`
                     case "$third" in
-                        'P')    readchar=FN_01;;
-                        'Q')    readchar=FN_02;;
-                        'R')    readchar=FN_03;;
-                        'S')    readchar=FN_04;;
+                        'F')    readchar="DEL";;
+                        'H')    readchar="HOME";;
+                        'P')    readchar="FN_01";;
+                        'Q')    readchar="FN_02";;
+                        'R')    readchar="FN_03";;
+                        'S')    readchar="FN_04";;
                         *)      readchar="$readchar$second$third";;
                     esac;;
 

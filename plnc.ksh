@@ -2,21 +2,23 @@
 #        1         2         3         4         5         6         7         8         9
 #234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
 # Import lib
-. $OHRS_STUFF_PATH/plnc-ksh/kbdlib.sh
 
 ################################################################################
-SCRIPT_NAME="PLNKSH Calc"
+PLNKSH_CALC_SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.999a
+PLN_KSH_VERSION=0.1.000
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
 DATE_END="07-04-2019"
 ################################################################################
+OHRS_LIB_DIR="$OHRS_STUFF_PATH/lib/sh"
+. $OHRS_LIB_DIR/colors-constants.sh
+. $OHRS_STUFF_PATH/plnc-ksh/kbdlib.sh
 
 #clear
-BOLD_GREEN="\033[1;49;92m"
-NO_COLOUR="\033[0m"
-BOLD_RED="\033[1;49;91m"
+#BOLD_GREEN="\033[1;49;92m"
+#NO_COLOUR="\033[0m"
+#RED="\033[1;49;91m"
 
 function print_regs {
    if [[ $CLRSCR == "TRUE" ]]; then
@@ -39,8 +41,12 @@ function print_regs {
        columns_available=$((COLUMNS - 3))
        for index in "${!regs[@]}"; do
            if [[ -n ${regs[index]} ]]; then
-                  printf "%2d:%${columns_available}.${PRECISION}f\n" $regs_length ${regs[$index]}
-               ((regs_length--))
+               if [[ ${regs[index]} -ge 0 ]]; then
+                   printf "$D_WHITE%2d:$C_RST%${columns_available}.${PRECISION}f\n" $regs_length ${regs[$index]}
+               else
+                   printf "$D_WHITE%2d:$D_RED%${columns_available}.${PRECISION}f$C_RST\n" $regs_length ${regs[$index]}
+              fi
+              ((regs_length--))
            fi
        done
     else
@@ -72,7 +78,7 @@ reg_idx=0
 typeset -F10 input_f
 
 usage(){
-        print $SCRIPT_NAME
+    print $PLNKSH_CALC_SCRIPT_NAME
 	print "Usage: plncalc.ksh [-p precision] [-v] [-t]"
 	print "  -k   Precision"
 	print "  -C   Columns"
@@ -141,7 +147,7 @@ function load_reg {
    fi
        input_f=$input
     #echo $input
-   printf "\r%${COLUMNS}s" ${input}
+   printf "\r${FG255}%${COLUMNS}s${C_RST}" ${input}
 }
 
 

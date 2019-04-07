@@ -7,10 +7,10 @@
 ################################################################################
 SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.996a
+PLN_KSH_VERSION=0.997a
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
-DATE_END="05-04-2019"
+DATE_END="06-04-2019"
 ################################################################################
 
 #clear
@@ -228,19 +228,41 @@ function swap {
 }
 
 function sqrt {
-    #echo 'sqrt()'
    if [[ -n $input ]]; then
       input_f=$((sqrt(input_f)))
-      #echo $input_f
-      #echo "$input_f"
       input=""
       load_reg "$input_f"
-      #regs[$reg_idx]=$((sqrt(input_f)))
-      #input=""
-      #((reg_idx++))
       return
    else
       regs[reg_idx - 1]=$((sqrt(${regs[reg_idx - 1]})))
+      regs[reg_idx]=""
+   fi
+
+   print_regs
+}
+
+function power {
+   if [[ -n $input ]]; then
+      input_f=$((regs[reg_idx - 1] ** input_f))
+      input=""
+      load_reg "$input_f"
+      return
+   else
+      regs[reg_idx - 1]=$((regs[reg_idx - 2] ** regs[reg_idx - 1]))
+      regs[reg_idx]=""
+   fi
+
+   print_regs
+}
+
+function inv_power {
+   if [[ -n $input ]]; then
+      input_f=$((regs[reg_idx - 1] ** (1 / input_f)))
+      input=""
+      load_reg "$input_f"
+      return
+   else
+      regs[reg_idx - 1]=$((regs[reg_idx - 2] ** regs[reg_idx - 1]))
       regs[reg_idx]=""
    fi
 
@@ -414,14 +436,16 @@ function dispatch_key {
                             'a') abs;;
                             'd') drop_regs;;
                             'f') float_p_reminder;;
+                            'H') print_help;;
                             'k') set_precision $input
                                  print_regs
                                  ;;
                             'I') to_inch;;
                             'M') to_meter;;
                             'm') minus;;
-                            'P') input_pi;;
+                            #'P') input_pi;;
                             'p') power;;
+                            'P') inv_power;;
                             'R') recall_reg $input;;
                             'r') sqrt;;
                             'S') swap;;

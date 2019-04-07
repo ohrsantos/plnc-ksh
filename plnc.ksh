@@ -7,7 +7,7 @@
 ################################################################################
 SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.998a
+PLN_KSH_VERSION=0.999a
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
 DATE_END="07-04-2019"
@@ -115,7 +115,7 @@ shift $(($OPTIND - 1))
 print "${SCRIPT_NAME} ${PLN_KSH_VERSION}"
 
 function clear {
-   printf  "\r                               \r"
+   printf "\r%${COLUMNS}s" ' '
    input=""
 }
 
@@ -134,9 +134,13 @@ function drop_regs {
 function load_reg {
     #echo 'load_reg()'
     #echo $input
-   input="${input}${1}"
+   if [[ $1 != "BS" ]]; then
+       input="${input}${1}"
+   else
+       input="${input%?}"
+   fi
+       input_f=$input
     #echo $input
-   input_f=$input
    printf "\r%${COLUMNS}s" ${input}
 }
 
@@ -409,12 +413,12 @@ function dispatch_key {
                "CR")       enter;;
             "FN_01")       print_help;;
             "FN_02")       print_regs;;
-            "FN_05")       swap;;
+            "FN_05")       echo F5;;
             "FN_06")       echo F6;;
             "FN_07")       echo F7;;
             "FN_08")       echo F8;;
             "FN_09")       echo F9;;
-            "FN_10")       triple_zeros;;
+            "FN_10")       echo F10;;
             "FN_11")       echo F11;;
             "FN_12")       echo F12;;
             "CURS_RIGHT")  double_zeros;;
@@ -426,6 +430,7 @@ function dispatch_key {
             "HOME")       recall_reg $input;;
             "INS")         echo INS;;
             "DEL")         clear;;
+            "BS")         load_reg "$Key";;
                 *)      case $Key in
                             '~') round;;
                             ',') double_zeros;;

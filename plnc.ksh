@@ -7,10 +7,10 @@
 ################################################################################
 SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.997a
+PLN_KSH_VERSION=0.998a
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
-DATE_END="06-04-2019"
+DATE_END="07-04-2019"
 ################################################################################
 
 #clear
@@ -405,10 +405,10 @@ function dispatch_key {
     case "$Key" in
            "CTRL_B")       print -n "CTRL_B";;
            "CTRL_C")       printf "\nbye!\n"; exit 0;;
-           "CTRL_P")       print_regs;;
+           "CTRL_P")       input_pi;;
                "CR")       enter;;
             "FN_01")       print_help;;
-            "FN_02")       recall_reg $input;;
+            "FN_02")       print_regs;;
             "FN_05")       swap;;
             "FN_06")       echo F6;;
             "FN_07")       echo F7;;
@@ -423,6 +423,7 @@ function dispatch_key {
             "CURS_LEFT")   drop_regs;;
             "PG_UP")       sqrt;;
             "PG_DOWN")     triple_zeros;;
+            "HOME")       recall_reg $input;;
             "INS")         echo INS;;
             "DEL")         clear;;
                 *)      case $Key in
@@ -443,7 +444,6 @@ function dispatch_key {
                             'I') to_inch;;
                             'M') to_meter;;
                             'm') minus;;
-                            #'P') input_pi;;
                             'p') power;;
                             'P') inv_power;;
                             'R') recall_reg $input;;

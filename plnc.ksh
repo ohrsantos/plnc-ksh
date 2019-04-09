@@ -6,10 +6,10 @@
 ################################################################################
 PLNKSH_CALC_SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.1.000
+PLN_KSH_VERSION=0.1.001
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
-DATE_END="07-04-2019"
+DATE_END="09-04-2019"
 ################################################################################
 OHRS_LIB_DIR="$OHRS_STUFF_PATH/lib/sh"
 . $OHRS_LIB_DIR/colors-constants.sh
@@ -118,7 +118,7 @@ done
 
 shift $(($OPTIND - 1))
 
-print "${SCRIPT_NAME} ${PLN_KSH_VERSION}"
+print "${PLNKSH_CALC_SCRIPT_NAME} ${PLN_KSH_VERSION}"
 
 function clear {
    printf "\r%${COLUMNS}s" ' '

@@ -118,7 +118,7 @@ done
 
 shift $(($OPTIND - 1))
 
-print "${SCRIPT_NAME} ${PLN_KSH_VERSION}"
+print "${PLNKSH_CALC_SCRIPT_NAME} ${PLN_KSH_VERSION}"
 
 function clear {
    printf "\r%${COLUMNS}s" ' '

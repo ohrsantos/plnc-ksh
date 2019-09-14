@@ -13,8 +13,8 @@ DATE_END="14-09-2019"
 ################################################################################
 OHRS_LIB_DIR="$OHRS_STUFF_PATH/lib/sh"
 OHRS_ETC_DIR="$OHRS_STUFF_PATH/etc"
-. $OHRS_ETC_DIR/color-constants.sh
-. $OHRS_STUFF_PATH/plnc-ksh/kbdlib.sh
+source $OHRS_ETC_DIR/color-constants.sh
+source $OHRS_LIB_DIR/kbdlib.sh
 
 #clear
 #BOLD_GREEN="\033[1;49;92m"

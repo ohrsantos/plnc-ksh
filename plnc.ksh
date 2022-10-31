@@ -139,15 +139,16 @@ function drop_regs {
 }
 
 function load_reg {
-    #echo 'load_reg()'
-    #echo $input
    if [[ $1 != "BS" ]]; then
-       input="${input}${1}"
+        if [[ $1 == "." ]]; then
+            input="0."
+        else
+            input="${input}${1}"
+        fi
    else
        input="${input%?}"
    fi
        input_f=$input
-    #echo $input
    printf "\r${FG255}%${COLUMNS}s${C_RST}" ${input}
 }
 

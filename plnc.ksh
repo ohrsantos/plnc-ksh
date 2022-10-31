@@ -6,10 +6,11 @@
 ################################################################################
 PLNKSH_CALC_SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.1.002
+PLN_KSH_VERSION=0.1.003
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
 DATE_END="14-09-2019"
+DATE_END="31-10-2022"
 ################################################################################
 OHRS_LIB_DIR="$OHRS_STUFF_PATH/lib/sh"
 OHRS_ETC_DIR="$OHRS_STUFF_PATH/etc"

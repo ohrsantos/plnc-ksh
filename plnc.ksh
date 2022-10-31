@@ -24,11 +24,19 @@ source ./kbdlib.sh
 #RED="\033[1;49;91m"
 
 function print_regs {
+
    if [[ $CLRSCR == "TRUE" ]]; then
        tput clear
    fi
 
+
    printf  "\r                        \n"
+
+   for h in  ${history[@]}; do
+       printf "${FG237}%${COLUMNS}s${C_RST}\n" $h
+   done
+   for (( i = 0; i <= $COLUMNS; i++ )); do  printf "${FG237}-${C_RST}"; done
+   printf "\n\n"
 
    if [[ -n ${regs[0]} ]]; then
 
@@ -57,7 +65,7 @@ function print_regs {
     fi
 
    for ((i=0; i < COLUMNS; i++)); do
-      printf "-"
+      printf "="
    done
    printf "\n>"
 }
@@ -79,6 +87,8 @@ function set_precision {
 set_precision 2
 reg_idx=0
 typeset -F10 input_f
+typeset -a history
+hist_index=1
 
 usage(){
     print $PLNKSH_CALC_SCRIPT_NAME
@@ -142,7 +152,7 @@ function drop_regs {
 
 function load_reg {
    if [[ $1 != "BS" ]]; then
-        if [[ $1 == "." ]]; then
+        if [[ $1 == "." && -z $input ]]; then
             input="0."
         else
             input="${input}${1}"
@@ -159,6 +169,8 @@ function enter {
 
    if [[ -n $input ]]; then
       regs[$reg_idx]=$input_f
+      history[$hist_index]=$input
+      ((hist_index++))
       input=""
    else
       regs[$reg_idx]=${regs[reg_idx - 1]}

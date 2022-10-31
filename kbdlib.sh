@@ -62,7 +62,7 @@ then # ESC
    echo "ESC"
 elif [[ -z $(echo "$1"|tr -d '\177') ]]
 then # DEL key 
-   echo "DEL"
+   echo "BS"
 else
    echo $1
 fi

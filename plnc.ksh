@@ -6,7 +6,7 @@
 ################################################################################
 PLNKSH_CALC_SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.1.003
+PLN_KSH_VERSION=0.2.000
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
 DATE_END="14-09-2019"

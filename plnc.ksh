@@ -6,17 +6,17 @@
 ################################################################################
 PLNKSH_CALC_SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.2.000
+PLN_KSH_VERSION=0.2.001
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
 DATE_END="14-09-2019"
-DATE_END="31-10-2022"
+DATE_END="01-11-2022"
 ################################################################################
 OHRS_LIB_DIR="$OHRS_STUFF_PATH/lib/sh"
 OHRS_ETC_DIR="$OHRS_STUFF_PATH/etc"
 source $OHRS_ETC_DIR/color-constants.sh
 #source $OHRS_LIB_DIR/kbdlib.sh
-source ./kbdlib.sh
+source $OHRS_STUFF_PATH/share/plnc-ksh/kbdlib.sh
 
 #clear
 #BOLD_GREEN="\033[1;49;92m"

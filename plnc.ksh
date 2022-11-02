@@ -6,11 +6,11 @@
 ################################################################################
 PLNKSH_CALC_SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.2.001
+PLN_KSH_VERSION=0.2.002
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
 DATE_END="14-09-2019"
-DATE_END="01-11-2022"
+DATE_END="02-11-2022"
 ################################################################################
 OHRS_LIB_DIR="$OHRS_STUFF_PATH/lib/sh"
 OHRS_ETC_DIR="$OHRS_STUFF_PATH/etc"
@@ -30,7 +30,7 @@ function print_regs {
    fi
 
 
-   printf  "\r                        \n"
+   printf  "\r                        \n\n\n"
 
    for h in  ${history[@]}; do
        printf "${FG237}%${COLUMNS}s${C_RST}\n" $h

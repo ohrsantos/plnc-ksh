@@ -403,22 +403,52 @@ function input_pi {
 
 # ***  WIP ***
 function print_help {
-COMMAND[0]="Exitr|CTRL+C or q"
-COMMAND[1]="Print|Stack CTRL+P"
-COMMAND[2]="Recall|Register R#, F2"
-COMMAND[4]="Swap|F5"
-COMMAND[5]="Round|~"
-COMMAND[6]="00|,"
-COMMAND[7]="000|F10"
-COMMAND[8]="Clear|BACK SPACE"
-COMMAND[9]="Clear|BACK SPACE"
-COMMAND[10]="Minus|-"
-COMMAND[11]="Pi|p"
-COMMAND[12]="Precision|INPUT-REG k"
-COMMAND[13]="Precision|R1 k"
+COMMAND[00]="Exit            : CTRL+C or q"
+COMMAND[01]="Print           : Stack CTRL+P"
+COMMAND[02]="Recall          : Register R#, F2"
+COMMAND[04]="Swap            : Up Arrow, F5"
+COMMAND[05]="Round           : ~"
+COMMAND[06]="00              : Right Arrow"
+COMMAND[07]="000             : F10, Pg Down"
+COMMAND[08]="Clear Register  : Del"
+COMMAND[09]="Drop Register   : Left Arrow"
+COMMAND[10]="Minus           : Down Arrow, m"
+COMMAND[11]="Pi              : p"
+COMMAND[12]="Precision       : INPUT-REG k"
+COMMAND[13]="Precision       : R1 k"
+COMMAND[14]="To Inch         : I"
+COMMAND[15]="To Meter        : M"
+COMMAND[16]="Square          : r"
+COMMAND[17]="Power           : p"
+COMMAND[18]="Power Inv       : P"
+COMMAND[19]="Abs             : a"
 
-for i in "${!COMMAND[@]}"; do
-   echo "${COMMAND[i]}"
+#COMMAND[00]="Exit            ....................   CTRL+C or q"
+#COMMAND[01]="Print           ....................   Stack CTRL+P"
+#COMMAND[02]="Recall          ....................   Register R#, F2"
+#COMMAND[04]="Swap            ....................   Up Arrow, F5"
+#COMMAND[05]="Round           ....................   ~"
+#COMMAND[06]="00              ....................   Right Arrow"
+#COMMAND[07]="000             ....................   F10, Pg Down"
+#COMMAND[08]="Clear Register  ....................   Del"
+#COMMAND[09]="Drop Register   ....................   Left Arrow"
+#COMMAND[10]="Minus           ....................   Down Arrow, m"
+#COMMAND[11]="Pi              ....................   p"
+#COMMAND[12]="Precision       ....................   INPUT-REG k"
+#COMMAND[13]="Precision       ....................   R1 k"
+#COMMAND[14]="To Inch         ....................   I"
+#COMMAND[15]="To Meter        ....................   M"
+#COMMAND[16]="Square          ....................   r"
+#COMMAND[17]="Power           ....................   p"
+#COMMAND[18]="Power Inv       ....................   P"
+#COMMAND[19]="Abs             ....................   a"
+
+#for i in "${!COMMAND[@]}"; do
+#   echo "${COMMAND[i]}"
+#done
+
+for command in "${COMMAND[@]}"; do
+   echo "${command}"
 done
 
    printf  "\nPress any key to continue...                  \n\n"
@@ -435,7 +465,7 @@ function dispatch_key {
                "CR")       enter;;
             "FN_01")       print_help;;
             "FN_02")       print_regs;;
-            "FN_05")       echo F5;;
+            "FN_05")       echo swap;;
             "FN_06")       echo F6;;
             "FN_07")       echo F7;;
             "FN_08")       echo F8;;

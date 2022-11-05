@@ -169,8 +169,11 @@ function enter {
 
    if [[ -n $input ]]; then
       regs[$reg_idx]=$input_f
-      history[$hist_index]=$input
-      ((hist_index++))
+      if [[ $history_skip == 'true'  ]]; then
+          history_skip='false'
+      else
+          history[$hist_index]=$input; ((hist_index++))
+      fi
       input=""
    else
       regs[$reg_idx]=${regs[reg_idx - 1]}
@@ -187,6 +190,7 @@ function add {
    if [[ -n $input ]]; then
       regs[reg_idx - 1]=$((input_f + regs[reg_idx - 1]))
       regs[reg_idx]=""
+      history[$hist_index]=$input; ((hist_index++))
       input=""
    else
       regs[reg_idx - 2]=$((regs[reg_idx - 2] + regs[reg_idx - 1]))
@@ -203,6 +207,7 @@ function sub {
    if [[ -n $input ]]; then
       regs[reg_idx - 1]=$((regs[reg_idx - 1] - input_f))
       regs[reg_idx]=""
+      history[$hist_index]=$input; ((hist_index++))
       input=""
    else
       regs[reg_idx - 2]=$((regs[reg_idx - 2] - regs[reg_idx - 1]))
@@ -219,6 +224,7 @@ function mul {
    if [[ -n $input ]]; then
       regs[reg_idx - 1]=$((regs[reg_idx - 1] * input_f))
       regs[reg_idx]=""
+      history[$hist_index]=$input; ((hist_index++))
       input=""
    else
       regs[reg_idx - 2]=$((regs[reg_idx - 2] * regs[reg_idx - 1]))
@@ -235,6 +241,7 @@ function div {
    if [[ -n $input ]]; then
       regs[reg_idx - 1]=$((regs[reg_idx - 1] / input_f))
       regs[reg_idx]=""
+      history[$hist_index]=$input; ((hist_index++))
       input=""
    else
       regs[reg_idx - 2]=$((regs[reg_idx - 2] * 1.0 / regs[reg_idx - 1]))
@@ -256,6 +263,7 @@ function swap {
 function sqrt {
    if [[ -n $input ]]; then
       input_f=$((sqrt(input_f)))
+      history[$hist_index]=$input; ((hist_index++)); history_skip='true'
       input=""
       load_reg "$input_f"
       return
@@ -270,6 +278,7 @@ function sqrt {
 function power {
    if [[ -n $input ]]; then
       input_f=$((regs[reg_idx - 1] ** input_f))
+      history[$hist_index]=$input; ((hist_index++)); history_skip='true'
       input=""
       load_reg "$input_f"
       return
@@ -284,6 +293,7 @@ function power {
 function inv_power {
    if [[ -n $input ]]; then
       input_f=$((regs[reg_idx - 1] ** (1 / input_f)))
+      history[$hist_index]=$input; ((hist_index++)); history_skip='true'
       input=""
       load_reg "$input_f"
       return
@@ -298,6 +308,7 @@ function inv_power {
 function to_inch {
    if [[ -n $input ]]; then
       regs[$reg_idx]=$((input_f / 25.4))
+      history[$hist_index]=$input; ((hist_index++)); history_skip='true'
       input=""
       ((reg_idx++))
    else
@@ -311,6 +322,7 @@ function to_inch {
 function to_meter {
    if [[ -n $input ]]; then
       regs[$reg_idx]=$((input_f * 25.4))
+      history[$hist_index]=$input; ((hist_index++)); history_skip='true'
       input=""
       ((reg_idx++))
    else

@@ -2,11 +2,11 @@
 ################################################################################
 PLNKSH_CALC_SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.2.003
+PLN_KSH_VERSION=0.2.004
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
 DATE_END="14-09-2019"
-DATE_END="04-11-2022"
+DATE_END="07-11-2022"
 ################################################################################
 OHRS_LIB_DIR="$OHRS_STUFF_PATH/lib/sh"
 OHRS_ETC_DIR="$OHRS_STUFF_PATH/etc"
@@ -85,6 +85,7 @@ reg_idx=0
 typeset -F10 input_f
 typeset -a history
 hist_index=1
+float_point=false
 
 usage(){
     print $PLNKSH_CALC_SCRIPT_NAME
@@ -148,8 +149,16 @@ function drop_regs {
 
 function load_reg {
    if [[ $1 != "BS" ]]; then
-        if [[ $1 == "." && -z $input ]]; then
-            input="0."
+        if [[ $1 == "." ]]; then
+            if [[ -z $input ]]; then
+                input="0."
+                float_point=true
+            else
+                if [[ $float_point != true ]]; then
+                    input="${input}${1}"
+                    float_point=true
+                fi
+            fi
         else
             input="${input}${1}"
         fi
@@ -163,6 +172,7 @@ function load_reg {
 
 function enter {
 
+   float_point=false
    if [[ -n $input ]]; then
       regs[$reg_idx]=$input_f
       if [[ $history_skip == 'true'  ]]; then

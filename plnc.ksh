@@ -191,6 +191,7 @@ function enter {
 }
 
 function add {
+   float_point=false
    if(( $reg_idx < 1)); then return;fi
 
    if [[ -n $input ]]; then
@@ -208,6 +209,7 @@ function add {
 }
 
 function sub {
+   float_point=false
    if(( $reg_idx < 1)); then print "Error!"; return;fi
 
    if [[ -n $input ]]; then
@@ -225,6 +227,7 @@ function sub {
 }
 
 function mul {
+   float_point=false
    if(( $reg_idx < 1)); then print "Error!"; return;fi
 
    if [[ -n $input ]]; then
@@ -242,6 +245,7 @@ function mul {
 }
 
 function div {
+   float_point=false
    if(( $reg_idx < 1)); then print "Error!"; return;fi
 
    if [[ -n $input ]]; then

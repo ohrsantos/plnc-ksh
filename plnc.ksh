@@ -271,6 +271,7 @@ function swap {
 }
 
 function sqrt {
+   float_point=false
    if [[ -n $input ]]; then
       input_f=$((sqrt(input_f)))
       history[$hist_index]=$input; ((hist_index++)); history_skip='true'
@@ -286,6 +287,7 @@ function sqrt {
 }
 
 function power {
+   float_point=false
    if [[ -n $input ]]; then
       input_f=$((regs[reg_idx - 1] ** input_f))
       history[$hist_index]=$input; ((hist_index++)); history_skip='true'
@@ -301,6 +303,7 @@ function power {
 }
 
 function inv_power {
+   float_point=false
    if [[ -n $input ]]; then
       input_f=$((regs[reg_idx - 1] ** (1 / input_f)))
       history[$hist_index]=$input; ((hist_index++)); history_skip='true'
@@ -316,6 +319,7 @@ function inv_power {
 }
 
 function to_inch {
+   float_point=false
    if [[ -n $input ]]; then
       regs[$reg_idx]=$((input_f / 25.4))
       history[$hist_index]=$input; ((hist_index++)); history_skip='true'
@@ -330,6 +334,7 @@ function to_inch {
 }
 
 function to_meter {
+   float_point=false
    if [[ -n $input ]]; then
       regs[$reg_idx]=$((input_f * 25.4))
       history[$hist_index]=$input; ((hist_index++)); history_skip='true'
@@ -344,6 +349,7 @@ function to_meter {
 }
 
 function abs {
+   float_point=false
    if [[ -n $input ]]; then
       regs[$reg_idx]=$((abs(input_f)))
       input=""

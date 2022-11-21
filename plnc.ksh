@@ -6,7 +6,7 @@ PLN_KSH_VERSION=0.2.004
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
 DATE_END="14-09-2019"
-DATE_END="07-11-2022"
+DATE_END="21-11-2022"
 ################################################################################
 OHRS_LIB_DIR="$OHRS_STUFF_PATH/lib/sh"
 OHRS_ETC_DIR="$OHRS_STUFF_PATH/etc"
@@ -289,11 +289,13 @@ function sqrt {
 function power {
    float_point=false
    if [[ -n $input ]]; then
-      input_f=$((regs[reg_idx - 1] ** input_f))
+      regs[$reg_idx]=$((regs[reg_idx - 1] ** input_f))
+      #input_f=$((regs[reg_idx - 1] ** input_f))
       history[$hist_index]=$input; ((hist_index++)); history_skip='true'
       input=""
-      load_reg "$input_f"
-      return
+      ((reg_idx++))
+      #load_reg "$input_f"
+      #return
    else
       regs[reg_idx - 1]=$((regs[reg_idx - 2] ** regs[reg_idx - 1]))
       regs[reg_idx]=""
@@ -305,11 +307,13 @@ function power {
 function inv_power {
    float_point=false
    if [[ -n $input ]]; then
-      input_f=$((regs[reg_idx - 1] ** (1 / input_f)))
+      regs[$reg_idx]=$((regs[reg_idx - 1] ** (1 / input_f)))
+      #input_f=$((regs[reg_idx - 1] ** (1 / input_f)))
       history[$hist_index]=$input; ((hist_index++)); history_skip='true'
       input=""
-      load_reg "$input_f"
-      return
+      ((reg_idx++))
+      #load_reg "$input_f"
+      #return
    else
       regs[reg_idx - 1]=$((regs[reg_idx - 2] ** regs[reg_idx - 1]))
       regs[reg_idx]=""

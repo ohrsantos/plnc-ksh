@@ -29,8 +29,8 @@ function print_regs {
 
    printf  "\r                        \n\n\n"
 
-   for h in  ${history[@]}; do
-       printf "${FG237}%${COLUMNS}s${C_RST}\n" $h
+   for h in "${history[@]}"; do
+        printf "${FG237}%${COLUMNS}s${C_RST}\n" "$h"
    done
    for (( i = 0; i <= $COLUMNS; i++ )); do  printf "${FG237}-${C_RST}"; done
    printf "\n\n"
@@ -195,6 +195,7 @@ function add {
    float_point=false
    if(( $reg_idx < 1)); then return;fi
 
+
    if [[ -n $input ]]; then
       regs[reg_idx - 1]=$((input_f + regs[reg_idx - 1]))
       regs[reg_idx]=""
@@ -206,6 +207,7 @@ function add {
       regs[reg_idx]=""
    fi
 
+   history[$hist_index]='+'; ((hist_index++))
    print_regs
 }
 
@@ -224,6 +226,7 @@ function sub {
       regs[reg_idx]=""
    fi
 
+   history[$hist_index]='-'; ((hist_index++))
    print_regs
 }
 
@@ -242,6 +245,7 @@ function mul {
       regs[reg_idx]=""
    fi
 
+   history[$hist_index]='*'; ((hist_index++))
    print_regs
 }
 
@@ -260,6 +264,7 @@ function div {
       regs[reg_idx]=""
    fi
 
+   history[$hist_index]='/'; ((hist_index++))
    print_regs
 }
 
@@ -268,6 +273,7 @@ function swap {
    regs[reg_idx - 2]=${regs[reg_idx - 1]}
    regs[reg_idx - 1]=$aux
 
+   history[$hist_index]='swap'; ((hist_index++))
    print_regs
 }
 
@@ -284,6 +290,7 @@ function sqrt {
       regs[reg_idx]=""
    fi
 
+   history[$hist_index]='sqrt'; ((hist_index++))
    print_regs
 }
 

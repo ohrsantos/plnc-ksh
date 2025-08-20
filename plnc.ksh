@@ -2,7 +2,7 @@
 ################################################################################
 PLNKSH_CALC_SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.2.005
+PLN_KSH_VERSION=0.2.007
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
 DATE_END="14-09-2019"
@@ -208,6 +208,7 @@ function add {
    fi
 
    history[$hist_index]='+'; ((hist_index++))
+   history[$hist_index]="${regs[0]}"; ((hist_index++))
    print_regs
 }
 
@@ -227,6 +228,7 @@ function sub {
    fi
 
    history[$hist_index]='-'; ((hist_index++))
+   history[$hist_index]="${regs[0]}"; ((hist_index++))
    print_regs
 }
 
@@ -246,6 +248,7 @@ function mul {
    fi
 
    history[$hist_index]='*'; ((hist_index++))
+   history[$hist_index]="${regs[0]}"; ((hist_index++))
    print_regs
 }
 
@@ -265,6 +268,7 @@ function div {
    fi
 
    history[$hist_index]='/'; ((hist_index++))
+   history[$hist_index]="${regs[0]}"; ((hist_index++))
    print_regs
 }
 
@@ -274,6 +278,7 @@ function swap {
    regs[reg_idx - 1]=$aux
 
    history[$hist_index]='swap'; ((hist_index++))
+   history[$hist_index]="${regs[0]}"; ((hist_index++))
    print_regs
 }
 
@@ -281,16 +286,22 @@ function sqrt {
    float_point=false
    if [[ -n $input ]]; then
       input_f=$((sqrt(input_f)))
-      history[$hist_index]=$input; ((hist_index++)); history_skip='true'
+     # if(( $reg_idx < 0)); then
+     #     #regs[reg_idx - 1]=$input_f
+     #     regs[reg_idx]=""
+     # fi
+     history[$hist_index]=$input; ((hist_index++)); history_skip='true'
+     history[$hist_index]='sqrt'; ((hist_index++))
+     history[$hist_index]=$input_f; ((hist_index++))
       input=""
       load_reg "$input_f"
-      return
    else
       regs[reg_idx - 1]=$((sqrt(${regs[reg_idx - 1]})))
       regs[reg_idx]=""
+      history[$hist_index]='sqrt'; ((hist_index++))
+      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
    fi
 
-   history[$hist_index]='sqrt'; ((hist_index++))
    print_regs
 }
 
@@ -298,15 +309,16 @@ function power {
    float_point=false
    if [[ -n $input ]]; then
       regs[$reg_idx]=$((regs[reg_idx - 1] ** input_f))
-      #input_f=$((regs[reg_idx - 1] ** input_f))
-      history[$hist_index]=$input; ((hist_index++)); history_skip='true'
+      history[$hist_index]=$input; ((hist_index++))
       input=""
+      history[$hist_index]='power'; ((hist_index++))
+      history[$hist_index]=${regs[$reg_idx]}; ((hist_index++))
       ((reg_idx++))
-      #load_reg "$input_f"
-      #return
    else
       regs[reg_idx - 1]=$((regs[reg_idx - 2] ** regs[reg_idx - 1]))
       regs[reg_idx]=""
+      history[$hist_index]='power'; ((hist_index++))
+      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
    fi
 
    print_regs
@@ -316,15 +328,16 @@ function inv_power {
    float_point=false
    if [[ -n $input ]]; then
       regs[$reg_idx]=$((regs[reg_idx - 1] ** (1 / input_f)))
-      #input_f=$((regs[reg_idx - 1] ** (1 / input_f)))
-      history[$hist_index]=$input; ((hist_index++)); history_skip='true'
+      history[$hist_index]=$input; ((hist_index++))
       input=""
+      history[$hist_index]='inv power'; ((hist_index++))
+      history[$hist_index]=${regs[$reg_idx]}; ((hist_index++))
       ((reg_idx++))
-      #load_reg "$input_f"
-      #return
    else
       regs[reg_idx - 1]=$((regs[reg_idx - 2] ** regs[reg_idx - 1]))
       regs[reg_idx]=""
+      history[$hist_index]='inv power'; ((hist_index++))
+      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
    fi
 
    print_regs
@@ -335,11 +348,14 @@ function to_inch {
    if [[ -n $input ]]; then
       regs[$reg_idx]=$((input_f / 25.4))
       history[$hist_index]=$input; ((hist_index++)); history_skip='true'
+      history[$hist_index]=${regs[$reg_idx]}; ((hist_index++))
       input=""
       ((reg_idx++))
    else
       regs[reg_idx - 1]=$((${regs[reg_idx - 1]} / 25.4 ))
       regs[reg_idx]=""
+      history[$hist_index]='to inch'; ((hist_index++))
+      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
    fi
 
    print_regs
@@ -350,11 +366,15 @@ function to_meter {
    if [[ -n $input ]]; then
       regs[$reg_idx]=$((input_f * 25.4))
       history[$hist_index]=$input; ((hist_index++)); history_skip='true'
+      history[$hist_index]='to milimiter'; ((hist_index++))
+      history[$hist_index]=${regs[$reg_idx]}; ((hist_index++))
       input=""
       ((reg_idx++))
    else
       regs[reg_idx - 1]=$((${regs[reg_idx - 1]} * 25.4 ))
       regs[reg_idx]=""
+      history[$hist_index]='to milimiter'; ((hist_index++))
+      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
    fi
 
    print_regs
@@ -364,11 +384,16 @@ function abs {
    float_point=false
    if [[ -n $input ]]; then
       regs[$reg_idx]=$((abs(input_f)))
+      history[$hist_index]=$input; ((hist_index++)); history_skip='true'
+      history[$hist_index]='abs'; ((hist_index++))
+      history[$hist_index]=$input_f; ((hist_index++))
       input=""
       ((reg_idx++))
    else
       regs[reg_idx - 1]=$((abs(${regs[reg_idx - 1]})))
       regs[reg_idx]=""
+      history[$hist_index]='abs'; ((hist_index++))
+      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
    fi
 
    print_regs
@@ -381,6 +406,8 @@ function minus {
    else
       regs[reg_idx - 1]=$((${regs[reg_idx - 1]} * (-1)))
       regs[reg_idx]=""
+      history[$hist_index]='minus'; ((hist_index++))
+      history[$hist_index]="${regs[0]}"; ((hist_index++))
       print_regs
    fi
 }
@@ -392,6 +419,8 @@ function round {
    else
       regs[reg_idx - 1]=$((round(${regs[reg_idx - 1]})))
       regs[reg_idx]=""
+      history[$hist_index]='round'; ((hist_index++))
+      history[$hist_index]="${regs[0]}"; ((hist_index++))
       print_regs
    fi
 }
@@ -403,6 +432,8 @@ function trunc {
    else
       regs[reg_idx - 1]=$((trunc(${regs[reg_idx - 1]})))
       regs[reg_idx]=""
+      history[$hist_index]='trunc'; ((hist_index++))
+      history[$hist_index]="${regs[0]}"; ((hist_index++))
       print_regs
    fi
 }
@@ -414,6 +445,8 @@ function float_p_reminder {
    else
       regs[reg_idx - 1]=$((fmod(${regs[reg_idx - 1]})))
       regs[reg_idx]=""
+      history[$hist_index]='reminder'; ((hist_index++))
+      history[$hist_index]="${regs[0]}"; ((hist_index++))
       print_regs
    fi
 }

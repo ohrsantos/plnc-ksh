@@ -2,12 +2,13 @@
 ################################################################################
 PLNKSH_CALC_SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.2.007
+PLN_KSH_VERSION=0.2.009
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
 DATE_END="14-09-2019"
 DATE_END="21-11-2022"
 DATE_END="19-08-2025"
+DATE_END="15-10-2025"
 ################################################################################
 OHRS_LIB_DIR="$OHRS_STUFF_PATH/lib/sh"
 OHRS_ETC_DIR="$OHRS_STUFF_PATH/etc"
@@ -305,6 +306,30 @@ function sqrt {
    print_regs
 }
 
+function reverse {
+    echo reverse
+   float_point=false
+   if [[ -n $input ]]; then
+      input_f=$((1/input_f))
+     # if(( $reg_idx < 0)); then
+     #     #regs[reg_idx - 1]=$input_f
+     #     regs[reg_idx]=""
+     # fi
+     history[$hist_index]=$input; ((hist_index++)); history_skip='true'
+     history[$hist_index]='reverse'; ((hist_index++))
+     history[$hist_index]=$input_f; ((hist_index++))
+      input=""
+      load_reg "$input_f"
+   else
+      regs[reg_idx - 1]=$((1/${regs[reg_idx - 1]}))
+      regs[reg_idx]=""
+      history[$hist_index]='reverse'; ((hist_index++))
+      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
+   fi
+
+   print_regs
+}
+
 function power {
    float_point=false
    if [[ -n $input ]]; then
@@ -460,7 +485,6 @@ function triple_zeros {
 }
 
 function recall_reg {
-
    if [[ -n ${1} ]]; then
       printf  "\r"
       input=""
@@ -495,6 +519,7 @@ COMMAND[16]="Square          : r"
 COMMAND[17]="Power           : p"
 COMMAND[18]="Power Inv       : P"
 COMMAND[19]="Abs             : a"
+COMMAND[20]="Reverse         : CTRL+R"
 
 #COMMAND[00]="Exit            ....................   CTRL+C or q"
 #COMMAND[01]="Print           ....................   Stack CTRL+P"
@@ -531,10 +556,12 @@ done
 }
 
 function dispatch_key {
-    case "$Key" in
+    key="$1"
+    case "$key" in
            "CTRL_B")       print -n "CTRL_B";;
            "CTRL_C")       printf "\nbye!\n"; exit 0;;
            "CTRL_P")       input_pi;;
+           "CTRL_R")       reverse;;
                "CR")       enter;;
             "FN_01")       print_help;;
             "FN_02")       print_regs;;
@@ -555,8 +582,8 @@ function dispatch_key {
             "HOME")       recall_reg $input;;
             "INS")         echo INS;;
             "DEL")         clear;;
-            "BS")         load_reg "$Key";;
-                *)      case $Key in
+            "BS")         load_reg "$key";;
+                *)      case $key in
                             '~') round;;
                             ',') double_zeros;;
                             '+') add;;
@@ -576,11 +603,11 @@ function dispatch_key {
                             'm') minus;;
                             'p') power;;
                             'P') inv_power;;
-                            'R') recall_reg $input;;
+                            'R') reverse;;
                             'r') sqrt;;
                             'S') swap;;
                             'q') exit;;
-                             [0-9.])load_reg "$Key";;
+                             [0-9.])load_reg "$key";;
                         esac
     esac
 }
@@ -617,7 +644,4 @@ if [[ $ENABLE_TEST == "TRUE" ]]; then
     exit 0
 fi
 
-while true; do
-    Key=$(NewGetKey)
-    dispatch_key
-done
+while true; do dispatch_key "$(NewGetKey)"; done

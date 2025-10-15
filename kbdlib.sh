@@ -57,6 +57,15 @@ then # CR \r or control_m
 elif [[ -z $(echo "$1"|tr -d '\020') ]]
 then # control_p
    echo "CTRL_P"
+elif [[ -z $(echo "$1"|tr -d '\021') ]]
+then # control_q
+   echo "CTRL_Q"
+elif [[ -z $(echo "$1"|tr -d '\022') ]]
+then # control_r
+   echo "CTRL_R"
+elif [[ -z $(echo "$1"|tr -d '\023') ]]
+then # control_s
+   echo "CTRL_S"
 elif [[ -z $(echo "$1"|tr -d '\033') ]]
 then # ESC
    echo "ESC"
@@ -91,7 +100,7 @@ NewGetKey () {
         UNDEF) readchar=UNDEF;;
         CR) readchar=CR;;
         NL) readchar=NL;;
-        CTRL_A|CTRL_B|CTRL_C|CTRL_D|CTRL_E|CTRL_F|CTRL_G|CTRL_K|CTRL_L|CTRL_N|CTRL_P|BS|TAB|DEL) readchar=$xchar;;
+        CTRL_A|CTRL_B|CTRL_C|CTRL_D|CTRL_E|CTRL_F|CTRL_G|CTRL_K|CTRL_L|CTRL_N|CTRL_P|CTRL_Q|CTRL_R|CTRL_S|BS|TAB|DEL) readchar=$xchar;;
         ESC) # ecape sequence.  Read second char.
             second=$(dd bs=1 count=1 2>/dev/null)
             xsecond=$(special_char_str $second)

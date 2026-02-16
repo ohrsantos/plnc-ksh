@@ -2,7 +2,7 @@
 ################################################################################
 PLNKSH_CALC_SCRIPT_NAME="PLNKSH Calc"
 ################################################################################
-PLN_KSH_VERSION=0.2.009
+PLN_KSH_VERSION=0.3.000
 AUTHOR="Orlando Hehl Rebelo dos Santos"
 DATE_INI="05-08-2017"
 DATE_END="14-09-2019"
@@ -10,562 +10,381 @@ DATE_END="21-11-2022"
 DATE_END="19-08-2025"
 DATE_END="15-10-2025"
 ################################################################################
-OHRS_LIB_DIR="$OHRS_STUFF_PATH/lib/sh"
+
 OHRS_ETC_DIR="$OHRS_STUFF_PATH/etc"
 source $OHRS_ETC_DIR/color-constants.sh
-#source $OHRS_LIB_DIR/kbdlib.sh
 source $OHRS_STUFF_PATH/share/plnc-ksh/kbdlib.sh
 
-#clear
-#BOLD_GREEN="\033[1;49;92m"
-#NO_COLOUR="\033[0m"
-#RED="\033[1;49;91m"
-
-function print_regs {
-
-   if [[ $CLRSCR == "TRUE" ]]; then
-       tput clear
-   fi
-
-
-   printf  "\r                        \n\n\n"
-
-   for h in "${history[@]}"; do
-        printf "${FG237}%${COLUMNS}s${C_RST}\n" "$h"
-   done
-   for (( i = 0; i <= $COLUMNS; i++ )); do  printf "${FG237}-${C_RST}"; done
-   printf "\n\n"
-
-   if [[ -n ${regs[0]} ]]; then
-
-       regs_length=0
-       #This loop is used to count the vector elements not null as
-       #unused elements are not freed up in memory, by the shell 
-       for index in "${!regs[@]}"; do
-           if [[ -n ${regs[index]} ]]; then
-              ((regs_length++))
-           fi
-       done
-
-       columns_available=$((COLUMNS - 3))
-       for index in "${!regs[@]}"; do
-           if [[ -n ${regs[index]} ]]; then
-               if [[ ${regs[index]} -ge 0 ]]; then
-                   printf "$D_WHITE%2d:$C_RST%${columns_available}.${PRECISION}f\n" $regs_length ${regs[$index]}
-               else
-                   printf "$D_WHITE%2d:$D_RED%${columns_available}.${PRECISION}f$C_RST\n" $regs_length ${regs[$index]}
-              fi
-              ((regs_length--))
-           fi
-       done
-    else
-          echo "(EMPTY STACK)"
-    fi
-
-   for ((i=0; i < COLUMNS; i++)); do
-      printf "="
-   done
-   printf "\n>"
-}
-
-function set_precision {
-
-   if [[ -n ${1} ]]; then
-      PRECISION=${1}
-      input=""
-   else
-      PRECISION=${regs[reg_idx - 1]}
-      drop_regs
-   fi
-
-   #Unlike trunc(), abs() must be used because of printf() formating option and returnig error.
-   PRECISION=$((abs(PRECISION)))
-}
-
-set_precision 2
-reg_idx=0
-typeset -F10 input_f
-typeset -a history
-hist_index=1
-float_point=false
-
+################################################################################
 usage(){
     print $PLNKSH_CALC_SCRIPT_NAME
-	print "Usage: plncalc.ksh [-p precision] [-v] [-t]"
-	print "  -k   Precision"
-	print "  -C   Columns"
-	print "  -s   Clear screen"
-	print "  -t   Enable tests"
-	print "  -v   Print version and exit"
-	print "  -h   Print help and exit"
+    print "Usage: plncalc.ksh [-p precision] [-v] [-t]"
+    print "  -k   Precision"
+    print "  -C   Columns"
+    print "  -s   Clear screen"
+    print "  -t   Enable tests"
+    print "  -v   Print version and exit"
+    print "  -h   Print help and exit"
 }
 
-while getopts "k:C:tsvh" arg
-do
-        case $arg in
-            k)
-                set_precision $OPTARG
+################################################################################
+# HISTÓRICO
+################################################################################
+typeset -a hist_type
+typeset -a hist_op
+typeset -a hist_value
+hist_idx=0
+
+function hist_add_push {
+    hist_type[$hist_idx]="PUSH"
+    hist_value[$hist_idx]="$1"
+    ((hist_idx++))
+}
+
+function hist_add_binary {
+    hist_type[$hist_idx]="BINARY"
+    hist_op[$hist_idx]="$1"
+    hist_value[$hist_idx]=$2
+    ((hist_idx++))
+}
+
+################################################################################
+PRECISION=7
+reg_idx=0
+typeset -a regs
+typeset -F10 input_f
+input=""
+CLRSCR=FALSE
+ENABLE_TEST=FALSE
+
+################################################################################
+function auto_enter_if_needed {
+    if [[ -n $input ]]; then
+        regs[$reg_idx]=$input_f
+        hist_add_push "$input"
+        input=""
+        ((reg_idx++))
+    fi
+}
+
+################################################################################
+function print_history {
+
+    printf "\n"
+
+    for ((i=0; i < hist_idx; i++)); do
+
+        case "${hist_type[$i]}" in
+
+            "PUSH")
+                printf "${FG237}%*s${C_RST}\n" \
+                    $COLUMNS "${hist_value[$i]}"
                 ;;
-            C)
-                #COLUMNS=26
-                COLUMNS=$OPTARG
-                ;;
-            s)
-                CLRSCR=TRUE
-                ;;
-            v)
-                print "${SCRIPT_NAME} ${PLN_KSH_VERSION}"
-                exit 0
-                ;;
-            t)
-                ENABLE_TEST=TRUE
-                exec > /dev/null
-                ;;
-            h|*)
-                usage
-                exit 1
+
+            "BINARY")
+                formatted=$(printf "%.${PRECISION}f" "${hist_value[$i]}")
+                printf "${FG237}%*s %*s${C_RST}\n" \
+                    $((COLUMNS/2)) "${hist_op[$i]}" \
+                    $((COLUMNS - COLUMNS/2 - 1)) "$formatted"
                 ;;
         esac
-done
-
-shift $(($OPTIND - 1))
-
-print "${PLNKSH_CALC_SCRIPT_NAME} ${PLN_KSH_VERSION}"
-
-function clear {
-   printf "\r%${COLUMNS}s" ' '
-   input=""
+    done
 }
 
+################################################################################
+function print_regs {
 
-set -A regs
+    if [[ $CLRSCR == "TRUE" ]]; then
+        tput clear
+    fi
 
+    print_history
 
-function drop_regs {
-   if(( $reg_idx > 0)); then
-      regs[reg_idx - 1]=""
-      ((reg_idx--))
-      print_regs
-   fi
-}
+    for (( i = 0; i <= $COLUMNS; i++ )); do printf "-"; done
+    printf "\n\n"
 
-function load_reg {
-   if [[ $1 != "BS" ]]; then
-        if [[ $1 == "." ]]; then
-            if [[ -z $input ]]; then
-                input="0."
-                float_point=true
-            else
-                if [[ $float_point != true ]]; then
-                    input="${input}${1}"
-                    float_point=true
-                fi
+    if [[ -n ${regs[0]} ]]; then
+
+        regs_length=0
+        for index in "${!regs[@]}"; do
+            if [[ -n ${regs[index]} ]]; then
+                ((regs_length++))
             fi
-        else
-            input="${input}${1}"
-        fi
-   else
-       input="${input%?}"
-   fi
-       input_f=$input
-   printf "\r${FG255}%${COLUMNS}s${C_RST}" ${input}
+        done
+
+        columns_available=$((COLUMNS - 4))
+
+        for index in "${!regs[@]}"; do
+            if [[ -n ${regs[index]} ]]; then
+                printf "%2d: %*.${PRECISION}f\n" \
+                    $regs_length \
+                    $columns_available \
+                    ${regs[$index]}
+                ((regs_length--))
+            fi
+        done
+    else
+        echo "(EMPTY STACK)"
+    fi
+
+    for ((i=0; i < COLUMNS; i++)); do printf "="; done
+    printf "\n>"
 }
 
+################################################################################
+function set_precision {
+    if [[ -n ${1} ]]; then
+        PRECISION=${1}
+        input=""
+    else
+        PRECISION=${regs[reg_idx - 1]}
+        drop_regs
+    fi
+    PRECISION=$((abs(PRECISION)))
+}
 
+################################################################################
 function enter {
 
-   float_point=false
-   if [[ -n $input ]]; then
-      regs[$reg_idx]=$input_f
-      if [[ $history_skip == 'true'  ]]; then
-          history_skip='false'
-      else
-          history[$hist_index]=$input; ((hist_index++))
-      fi
-      input=""
-   else
-      regs[$reg_idx]=${regs[reg_idx - 1]}
-   fi
-   ((reg_idx++))
+    if [[ -n $input ]]; then
+        regs[$reg_idx]=$input_f
+        hist_add_push "$input"
+        input=""
+    else
+        regs[$reg_idx]=${regs[reg_idx - 1]}
+    fi
 
-   printf  "\r                               "
-   print_regs
+    ((reg_idx++))
+    print_regs
 }
 
+################################################################################
+# BINÁRIAS
+################################################################################
 function add {
-   float_point=false
-   if(( $reg_idx < 1)); then return;fi
-
-
-   if [[ -n $input ]]; then
-      regs[reg_idx - 1]=$((input_f + regs[reg_idx - 1]))
-      regs[reg_idx]=""
-      history[$hist_index]=$input; ((hist_index++))
-      input=""
-   else
-      regs[reg_idx - 2]=$((regs[reg_idx - 2] + regs[reg_idx - 1]))
-      ((reg_idx--))
-      regs[reg_idx]=""
-   fi
-
-   history[$hist_index]='+'; ((hist_index++))
-   history[$hist_index]="${regs[0]}"; ((hist_index++))
-   print_regs
+    auto_enter_if_needed
+    if(( reg_idx < 2 )); then return; fi
+    result=$((regs[reg_idx - 2] + regs[reg_idx - 1]))
+    hist_add_binary "+" "$result"
+    regs[reg_idx - 2]=$result
+    regs[reg_idx - 1]=""
+    ((reg_idx--))
+    print_regs
 }
 
 function sub {
-   float_point=false
-   if(( $reg_idx < 1)); then print "Error!"; return;fi
-
-   if [[ -n $input ]]; then
-      regs[reg_idx - 1]=$((regs[reg_idx - 1] - input_f))
-      regs[reg_idx]=""
-      history[$hist_index]=$input; ((hist_index++))
-      input=""
-   else
-      regs[reg_idx - 2]=$((regs[reg_idx - 2] - regs[reg_idx - 1]))
-      ((reg_idx--))
-      regs[reg_idx]=""
-   fi
-
-   history[$hist_index]='-'; ((hist_index++))
-   history[$hist_index]="${regs[0]}"; ((hist_index++))
-   print_regs
+    auto_enter_if_needed
+    if(( reg_idx < 2 )); then return; fi
+    result=$((regs[reg_idx - 2] - regs[reg_idx - 1]))
+    hist_add_binary "-" "$result"
+    regs[reg_idx - 2]=$result
+    regs[reg_idx - 1]=""
+    ((reg_idx--))
+    print_regs
 }
 
 function mul {
-   float_point=false
-   if(( $reg_idx < 1)); then print "Error!"; return;fi
-
-   if [[ -n $input ]]; then
-      regs[reg_idx - 1]=$((regs[reg_idx - 1] * input_f))
-      regs[reg_idx]=""
-      history[$hist_index]=$input; ((hist_index++))
-      input=""
-   else
-      regs[reg_idx - 2]=$((regs[reg_idx - 2] * regs[reg_idx - 1]))
-      ((reg_idx--))
-      regs[reg_idx]=""
-   fi
-
-   history[$hist_index]='*'; ((hist_index++))
-   history[$hist_index]="${regs[0]}"; ((hist_index++))
-   print_regs
+    auto_enter_if_needed
+    if(( reg_idx < 2 )); then return; fi
+    result=$((regs[reg_idx - 2] * regs[reg_idx - 1]))
+    hist_add_binary "*" "$result"
+    regs[reg_idx - 2]=$result
+    regs[reg_idx - 1]=""
+    ((reg_idx--))
+    print_regs
 }
 
 function div {
-   float_point=false
-   if(( $reg_idx < 1)); then print "Error!"; return;fi
-
-   if [[ -n $input ]]; then
-      regs[reg_idx - 1]=$((regs[reg_idx - 1] / input_f))
-      regs[reg_idx]=""
-      history[$hist_index]=$input; ((hist_index++))
-      input=""
-   else
-      regs[reg_idx - 2]=$((regs[reg_idx - 2] * 1.0 / regs[reg_idx - 1]))
-      ((reg_idx--))
-      regs[reg_idx]=""
-   fi
-
-   history[$hist_index]='/'; ((hist_index++))
-   history[$hist_index]="${regs[0]}"; ((hist_index++))
-   print_regs
+    auto_enter_if_needed
+    if(( reg_idx < 2 )); then return; fi
+    if (( regs[reg_idx - 1] == 0 )); then
+        print "Division by zero"
+        return
+    fi
+    result=$((regs[reg_idx - 2] * 1.0 / regs[reg_idx - 1]))
+    hist_add_binary "/" "$result"
+    regs[reg_idx - 2]=$result
+    regs[reg_idx - 1]=""
+    ((reg_idx--))
+    print_regs
 }
 
-function swap {
-   aux=${regs[reg_idx - 2]}
-   regs[reg_idx - 2]=${regs[reg_idx - 1]}
-   regs[reg_idx - 1]=$aux
-
-   history[$hist_index]='swap'; ((hist_index++))
-   history[$hist_index]="${regs[0]}"; ((hist_index++))
-   print_regs
-}
-
-function sqrt {
-   float_point=false
-   if [[ -n $input ]]; then
-      input_f=$((sqrt(input_f)))
-     # if(( $reg_idx < 0)); then
-     #     #regs[reg_idx - 1]=$input_f
-     #     regs[reg_idx]=""
-     # fi
-     history[$hist_index]=$input; ((hist_index++)); history_skip='true'
-     history[$hist_index]='sqrt'; ((hist_index++))
-     history[$hist_index]=$input_f; ((hist_index++))
-      input=""
-      load_reg "$input_f"
-   else
-      regs[reg_idx - 1]=$((sqrt(${regs[reg_idx - 1]})))
-      regs[reg_idx]=""
-      history[$hist_index]='sqrt'; ((hist_index++))
-      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
-   fi
-
-   print_regs
-}
-
-function reverse {
-    echo reverse
-   float_point=false
-   if [[ -n $input ]]; then
-      input_f=$((1/input_f))
-     # if(( $reg_idx < 0)); then
-     #     #regs[reg_idx - 1]=$input_f
-     #     regs[reg_idx]=""
-     # fi
-     history[$hist_index]=$input; ((hist_index++)); history_skip='true'
-     history[$hist_index]='reverse'; ((hist_index++))
-     history[$hist_index]=$input_f; ((hist_index++))
-      input=""
-      load_reg "$input_f"
-   else
-      regs[reg_idx - 1]=$((1/${regs[reg_idx - 1]}))
-      regs[reg_idx]=""
-      history[$hist_index]='reverse'; ((hist_index++))
-      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
-   fi
-
-   print_regs
-}
-
+################################################################################
+# POWER
+################################################################################
 function power {
-   float_point=false
-   if [[ -n $input ]]; then
-      regs[$reg_idx]=$((regs[reg_idx - 1] ** input_f))
-      history[$hist_index]=$input; ((hist_index++))
-      input=""
-      history[$hist_index]='power'; ((hist_index++))
-      history[$hist_index]=${regs[$reg_idx]}; ((hist_index++))
-      ((reg_idx++))
-   else
-      regs[reg_idx - 1]=$((regs[reg_idx - 2] ** regs[reg_idx - 1]))
-      regs[reg_idx]=""
-      history[$hist_index]='power'; ((hist_index++))
-      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
-   fi
-
-   print_regs
+    auto_enter_if_needed
+    if(( reg_idx < 2 )); then return; fi
+    result=$((regs[reg_idx - 2] ** regs[reg_idx - 1]))
+    hist_add_binary "Power" "$result"
+    regs[reg_idx - 2]=$result
+    regs[reg_idx - 1]=""
+    ((reg_idx--))
+    print_regs
 }
 
 function inv_power {
-   float_point=false
-   if [[ -n $input ]]; then
-      regs[$reg_idx]=$((regs[reg_idx - 1] ** (1 / input_f)))
-      history[$hist_index]=$input; ((hist_index++))
-      input=""
-      history[$hist_index]='inv power'; ((hist_index++))
-      history[$hist_index]=${regs[$reg_idx]}; ((hist_index++))
-      ((reg_idx++))
-   else
-      regs[reg_idx - 1]=$((regs[reg_idx - 2] ** regs[reg_idx - 1]))
-      regs[reg_idx]=""
-      history[$hist_index]='inv power'; ((hist_index++))
-      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
-   fi
-
-   print_regs
+    auto_enter_if_needed
+    if(( reg_idx < 2 )); then return; fi
+    result=$((regs[reg_idx - 2] ** (1.0/regs[reg_idx - 1])))
+    hist_add_binary "Inv Power" "$result"
+    regs[reg_idx - 2]=$result
+    regs[reg_idx - 1]=""
+    ((reg_idx--))
+    print_regs
 }
 
-function to_inch {
-   float_point=false
-   if [[ -n $input ]]; then
-      regs[$reg_idx]=$((input_f / 25.4))
-      history[$hist_index]=$input; ((hist_index++)); history_skip='true'
-      history[$hist_index]=${regs[$reg_idx]}; ((hist_index++))
-      input=""
-      ((reg_idx++))
-   else
-      regs[reg_idx - 1]=$((${regs[reg_idx - 1]} / 25.4 ))
-      regs[reg_idx]=""
-      history[$hist_index]='to inch'; ((hist_index++))
-      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
-   fi
-
-   print_regs
+################################################################################
+# UNÁRIAS HP STYLE
+################################################################################
+function square_root {
+    if [[ -n $input ]]; then
+        result=$((sqrt(input_f)))
+        input=$(printf "%.${PRECISION}f" "$result")
+        input_f=$result
+        printf "\r%${COLUMNS}s" "$input"
+    else
+        if(( reg_idx < 1 )); then return; fi
+        result=$((sqrt(${regs[reg_idx-1]})))
+        regs[reg_idx-1]=$result
+        hist_add_binary "Square Root" "$result"
+        print_regs
+    fi
 }
 
-function to_meter {
-   float_point=false
-   if [[ -n $input ]]; then
-      regs[$reg_idx]=$((input_f * 25.4))
-      history[$hist_index]=$input; ((hist_index++)); history_skip='true'
-      history[$hist_index]='to milimiter'; ((hist_index++))
-      history[$hist_index]=${regs[$reg_idx]}; ((hist_index++))
-      input=""
-      ((reg_idx++))
-   else
-      regs[reg_idx - 1]=$((${regs[reg_idx - 1]} * 25.4 ))
-      regs[reg_idx]=""
-      history[$hist_index]='to milimiter'; ((hist_index++))
-      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
-   fi
-
-   print_regs
+function inverse {
+    if [[ -n $input ]]; then
+        result=$((1.0/input_f))
+        input=$(printf "%.${PRECISION}f" "$result")
+        input_f=$result
+        printf "\r%${COLUMNS}s" "$input"
+    else
+        if(( reg_idx < 1 )); then return; fi
+        result=$((1.0/${regs[reg_idx-1]}))
+        regs[reg_idx-1]=$result
+        hist_add_binary "Inverse" "$result"
+        print_regs
+    fi
 }
 
 function abs {
-   float_point=false
-   if [[ -n $input ]]; then
-      regs[$reg_idx]=$((abs(input_f)))
-      history[$hist_index]=$input; ((hist_index++)); history_skip='true'
-      history[$hist_index]='abs'; ((hist_index++))
-      history[$hist_index]=$input_f; ((hist_index++))
-      input=""
-      ((reg_idx++))
-   else
-      regs[reg_idx - 1]=$((abs(${regs[reg_idx - 1]})))
-      regs[reg_idx]=""
-      history[$hist_index]='abs'; ((hist_index++))
-      history[$hist_index]=${regs[reg_idx - 1]}; ((hist_index++))
-   fi
-
-   print_regs
-}
-
-function minus {
-   if [[ -n $input ]]; then
-      input_f=$((input_f * (-1)))
-      printf "\r%.${PRECISION}f                        " $input_f
-   else
-      regs[reg_idx - 1]=$((${regs[reg_idx - 1]} * (-1)))
-      regs[reg_idx]=""
-      history[$hist_index]='minus'; ((hist_index++))
-      history[$hist_index]="${regs[0]}"; ((hist_index++))
-      print_regs
-   fi
+    if [[ -n $input ]]; then
+        result=$((abs(input_f)))
+        input=$(printf "%.${PRECISION}f" "$result")
+        input_f=$result
+        printf "\r%${COLUMNS}s" "$input"
+    else
+        regs[reg_idx-1]=$((abs(${regs[reg_idx-1]})))
+        hist_add_binary "Abs" "${regs[reg_idx-1]}"
+        print_regs
+    fi
 }
 
 function round {
-   if [[ -n $input ]]; then
-      input_f=$((round(input_f)))
-      printf "\r%.${PRECISION}f                        " $input_f
-   else
-      regs[reg_idx - 1]=$((round(${regs[reg_idx - 1]})))
-      regs[reg_idx]=""
-      history[$hist_index]='round'; ((hist_index++))
-      history[$hist_index]="${regs[0]}"; ((hist_index++))
-      print_regs
-   fi
+    if [[ -n $input ]]; then
+        result=$((round(input_f)))
+        input=$(printf "%.${PRECISION}f" "$result")
+        input_f=$result
+        printf "\r%${COLUMNS}s" "$input"
+    else
+        regs[reg_idx-1]=$((round(${regs[reg_idx-1]})))
+        hist_add_binary "Round" "${regs[reg_idx-1]}"
+        print_regs
+    fi
 }
 
 function trunc {
-   if [[ -n $input ]]; then
-      input_f=$((trunc(input_f)))
-      printf "\r%.${PRECISION}f                        " $input_f
-   else
-      regs[reg_idx - 1]=$((trunc(${regs[reg_idx - 1]})))
-      regs[reg_idx]=""
-      history[$hist_index]='trunc'; ((hist_index++))
-      history[$hist_index]="${regs[0]}"; ((hist_index++))
-      print_regs
-   fi
+    if [[ -n $input ]]; then
+        result=$((trunc(input_f)))
+        input=$(printf "%.${PRECISION}f" "$result")
+        input_f=$result
+        printf "\r%${COLUMNS}s" "$input"
+    else
+        regs[reg_idx-1]=$((trunc(${regs[reg_idx-1]})))
+        hist_add_binary "Trunc" "${regs[reg_idx-1]}"
+        print_regs
+    fi
 }
 
 function float_p_reminder {
-   if [[ -n $input ]]; then
-      input_f=$((fmod(input_f)))
-      printf "\r%.${PRECISION}f                        " $input_f
-   else
-      regs[reg_idx - 1]=$((fmod(${regs[reg_idx - 1]})))
-      regs[reg_idx]=""
-      history[$hist_index]='reminder'; ((hist_index++))
-      history[$hist_index]="${regs[0]}"; ((hist_index++))
-      print_regs
-   fi
-}
- 
-function double_zeros {
-   load_reg "00"
+    if [[ -n $input ]]; then
+        result=$((fmod(input_f)))
+        input=$(printf "%.${PRECISION}f" "$result")
+        input_f=$result
+        printf "\r%${COLUMNS}s" "$input"
+    else
+        regs[reg_idx-1]=$((fmod(${regs[reg_idx-1]})))
+        hist_add_binary "Reminder" "${regs[reg_idx-1]}"
+        print_regs
+    fi
 }
 
-function triple_zeros {
-   load_reg "000"
+function minus {
+    if [[ -n $input ]]; then
+        result=$((input_f*(-1)))
+        input=$(printf "%.${PRECISION}f" "$result")
+        input_f=$result
+        printf "\r%${COLUMNS}s" "$input"
+    else
+        regs[reg_idx-1]=$((regs[reg_idx-1]*(-1)))
+        hist_add_binary "Minus" "${regs[reg_idx-1]}"
+        print_regs
+    fi
 }
 
-function recall_reg {
-   if [[ -n ${1} ]]; then
-      printf  "\r"
-      input=""
-      load_reg ${regs[reg_idx - ${1}]}
-   fi
+################################################################################
+# RESTANTE ORIGINAL INALTERADO
+################################################################################
+function to_inch { regs[reg_idx-1]=$((${regs[reg_idx-1]} / 25.4)); print_regs; }
+function to_meter { regs[reg_idx-1]=$((${regs[reg_idx-1]} * 25.4)); print_regs; }
+
+function double_zeros { load_reg "00"; }
+function triple_zeros { load_reg "000"; }
+function recall_reg { load_reg ${regs[reg_idx - ${1}]}; }
+function input_pi { load_reg "3.1415926535"; }
+
+function drop_regs {
+    if(( reg_idx > 0 )); then
+        regs[reg_idx - 1]=""
+        ((reg_idx--))
+        print_regs
+    fi
 }
 
-function input_pi {
-   if [[ -z $input ]]; then
-       load_reg "3.1415926535"
-   fi
+function swap {
+    aux=${regs[reg_idx - 2]}
+    regs[reg_idx - 2]=${regs[reg_idx - 1]}
+    regs[reg_idx - 1]=$aux
+    print_regs
 }
 
-# ***  WIP ***
-function print_help {
-COMMAND[00]="Exit            : CTRL+C or q"
-COMMAND[01]="Print           : Stack F2"
-COMMAND[02]="Recall          : Register R#, R"
-COMMAND[04]="Swap            : Up Arrow, F5"
-COMMAND[05]="Round           : ~"
-COMMAND[06]="00              : Right Arrow"
-COMMAND[07]="000             : F10, Pg Down"
-COMMAND[08]="Clear Register  : Del"
-COMMAND[09]="Drop Register   : Left Arrow"
-COMMAND[10]="Minus           : Down Arrow, m"
-COMMAND[11]="Pi              : CTRL+P"
-COMMAND[12]="Precision       : INPUT-REG k"
-COMMAND[13]="Precision       : R1 k"
-COMMAND[14]="To Inch         : I"
-COMMAND[15]="To Meter        : M"
-COMMAND[16]="Square          : r"
-COMMAND[17]="Power           : p"
-COMMAND[18]="Power Inv       : P"
-COMMAND[19]="Abs             : a"
-COMMAND[20]="Reverse         : CTRL+R"
-
-#COMMAND[00]="Exit            ....................   CTRL+C or q"
-#COMMAND[01]="Print           ....................   Stack CTRL+P"
-#COMMAND[02]="Recall          ....................   Register R#, F2"
-#COMMAND[04]="Swap            ....................   Up Arrow, F5"
-#COMMAND[05]="Round           ....................   ~"
-#COMMAND[06]="00              ....................   Right Arrow"
-#COMMAND[07]="000             ....................   F10, Pg Down"
-#COMMAND[08]="Clear Register  ....................   Del"
-#COMMAND[09]="Drop Register   ....................   Left Arrow"
-#COMMAND[10]="Minus           ....................   Down Arrow, m"
-#COMMAND[11]="Pi              ....................   p"
-#COMMAND[12]="Precision       ....................   INPUT-REG k"
-#COMMAND[13]="Precision       ....................   R1 k"
-#COMMAND[14]="To Inch         ....................   I"
-#COMMAND[15]="To Meter        ....................   M"
-#COMMAND[16]="Square          ....................   r"
-#COMMAND[17]="Power           ....................   p"
-#COMMAND[18]="Power Inv       ....................   P"
-#COMMAND[19]="Abs             ....................   a"
-
-#for i in "${!COMMAND[@]}"; do
-#   echo "${COMMAND[i]}"
-#done
-
-for command in "${COMMAND[@]}"; do
-   echo "${command}"
-done
-
-   printf  "\nPress any key to continue...                  \n\n"
-   read -n1
-   print_regs
-
+function clear {
+    printf "\r%${COLUMNS}s" ' '
+    input=""
 }
 
+function load_reg {
+    if [[ $1 == "BS" ]]; then
+        input="${input%?}"
+    else
+        input="${input}${1}"
+    fi
+    input_f=$input
+    printf "\r%${COLUMNS}s" "$input"
+}
+
+################################################################################
 function dispatch_key {
     key="$1"
     case "$key" in
            "CTRL_B")       print -n "CTRL_B";;
            "CTRL_C")       printf "\nbye!\n"; exit 0;;
            "CTRL_P")       input_pi;;
-           "CTRL_R")       reverse;;
+           "CTRL_R")       inverse;;
                "CR")       enter;;
             "FN_01")       print_help;;
             "FN_02")       print_regs;;
-            "FN_05")       echo swap;;
+            "FN_05")       swap;;
             "FN_06")       echo F6;;
             "FN_07")       echo F7;;
             "FN_08")       echo F8;;
@@ -577,12 +396,12 @@ function dispatch_key {
             "CURS_DOWN")   minus;;
             "CURS_UP")     swap;;
             "CURS_LEFT")   drop_regs;;
-            "PG_UP")       sqrt;;
+            "PG_UP")       square_root;;
             "PG_DOWN")     triple_zeros;;
-            "HOME")       recall_reg $input;;
+            "HOME")        recall_reg $input;;
             "INS")         echo INS;;
             "DEL")         clear;;
-            "BS")         load_reg "$key";;
+            "BS")          load_reg "$key";;
                 *)      case $key in
                             '~') round;;
                             ',') double_zeros;;
@@ -595,16 +414,14 @@ function dispatch_key {
                             'd') drop_regs;;
                             'f') float_p_reminder;;
                             'H') print_help;;
-                            'k') set_precision $input
-                                 print_regs
-                                 ;;
+                            'k') set_precision $input; print_regs;;
                             'I') to_inch;;
                             'M') to_meter;;
                             'm') minus;;
                             'p') power;;
                             'P') inv_power;;
-                            'R') reverse;;
-                            'r') sqrt;;
+                            'R') inverse;;
+                            'r') square_root;;
                             'S') swap;;
                             'q') exit;;
                              [0-9.])load_reg "$key";;
@@ -612,36 +429,25 @@ function dispatch_key {
     esac
 }
 
+################################################################################
+while getopts "k:C:tsvh" arg
+do
+    case $arg in
+        k) set_precision $OPTARG ;;
+        C) COLUMNS=$OPTARG ;;
+        s) CLRSCR=TRUE ;;
+        v) print "${PLNKSH_CALC_SCRIPT_NAME} ${PLN_KSH_VERSION}"; exit 0 ;;
+        t) ENABLE_TEST=TRUE; exec > /dev/null ;;
+        h|*) usage; exit 1 ;;
+    esac
+done
 
-#Test Units -
-if [[ $ENABLE_TEST == "TRUE" ]]; then
-    (>&2 echo -n "Multiplication : ")
-    for Key in 1 '.' 5 0 'CR' 3 '*'; do
-       dispatch_key
-    done
-    if [[ $((abs(4.500000 - ${regs[0]}))) -le  0.0000001 ]]; then
-       (>&2 printf "${BOLD_GREEN}PASS!!!${NO_COLOUR}\n")
-    else
-       (>&2 printf "${BOLD_RED}FAILED!!!${NO_COLOUR}\n")
-       exit 255
-    fi
+shift $(($OPTIND - 1))
 
+print "${PLNKSH_CALC_SCRIPT_NAME} ${PLN_KSH_VERSION}"
+print_regs
 
-    #unset regs
-    (>&2 echo -n "Division       : ")
-    for Key in 2 '.' 7 0 'CR' 2 '/'; do
-       dispatch_key
-    #(>&2 echo -n "${regs[0]}")
-    done
-    #(>&2 echo -n "${regs[0]}")
-    if [[ $((abs(1.350000 - ${regs[0]}))) -le  0.0000001 ]]; then
-       (>&2 printf "${BOLD_GREEN}PASS!!!${NO_COLOUR}\n")
-    else
-       (>&2 printf "${BOLD_RED}FAILED!!!${NO_COLOUR}\n")
-       exit 255
-    fi
+while true; do
+    dispatch_key "$(NewGetKey)"
+done
 
-    exit 0
-fi
-
-while true; do dispatch_key "$(NewGetKey)"; done
